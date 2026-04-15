@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🥥 Live Coconut Dashboard</title>
+  <style>
+    :root {
+      --bg:        #0d1f0f;
+      --surface:   #122614;
+      --border:    #1e4020;
+      --accent:    #4caf50;
+      --gold:      #f5c518;
+      --text:      #e8f5e9;
+      --muted:     #6a9e6c;
+      --red:       #ef5350;
+      --blue:      #42a5f5;
+      --orange:    #ffa726;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      color: var(--gold);
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    #timestamp {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+    @media (max-width: 900px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .card h2 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    /* ── Weather table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 4px 8px;
+      text-align: left;
+    }
+
+    td {
+      padding: 6px 8px;
+      border-top: 1px solid var(--border);
+    }
+
+    tr:hover td { background: rgba(76, 175, 80, 0.05); }
+
+    .temp-hot  { color: var(--red);    font-weight: 600; }
+    .temp-warm { color: var(--orange); font-weight: 600; }
+    .temp-cool { color: var(--blue);   font-weight: 600; }
+
+    /* ── Bars ── */
+    .bar-wrap { display: flex; align-items: center; gap: 8px; }
+    .bar-bg {
+      flex: 1;
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      max-width: 120px;
+    }
+    .bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+    .bar-label { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+
+    /* ── Price sparkline ── */
+    .sparkline-wrap { overflow-x: auto; }
+    canvas { display: block; }
+
+    /* ── Stat pills ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+    }
+
+    .stat-pill {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    .stat-pill .label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .stat-pill .value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .stat-pill .sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ── Fact banner ── */
+    #fact-box {
+      background: linear-gradient(135deg, #1a3a1a, #122614);
+      border: 1px solid var(--gold);
+      border-radius: 10px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    #fact-box .coconut { font-size: 2rem; flex-shrink: 0; }
+    #fact-box .label   { font-size: 0.72rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
+    #fact-box .fact    { font-size: 1rem; color: var(--text); margin-top: 3px; line-height: 1.5; }
+
+    /* ── Price table ── */
+    .up   { color: var(--accent); }
+    .down { color: var(--red); }
+
+    /* ── Refresh bar ── */
+    #refresh-bar-wrap {
+      width: 100%;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    #refresh-bar {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      width: 100%;
+      transition: width linear;
+    }
+
+    .loading { color: var(--muted); font-style: italic; }
+
+    .weather-icon { font-size: 1.1rem; }
+
+    /* ── Flag ── */
+    .country-cell { display: flex; align-items: center; gap: 6px; }
+  </style>
+</head>
+<body>
+
+<h1>🥥 Live Coconut Dashboard</h1>
+<div id="timestamp">Loading...</div>
+<div id="refresh-bar-wrap"><div id="refresh-bar"></div></div>
+
+<!-- Fact banner -->
+<div id="fact-box" style="margin-bottom:16px">
+  <div class="coconut">🥥</div>
+  <div>
+    <div class="label">Coconut Fact</div>
+    <div class="fact" id="fact-text">Loading...</div>
+  </div>
+</div>
+
+<!-- Global stats -->
+<div class="stats-grid" id="stats-grid" style="margin-bottom:16px"></div>
+
+<!-- Weather -->
+<div class="card" style="margin-bottom:16px">
+  <h2>🌦 Weather in Coconut-Growing Regions</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Region</th>
+        <th>Country</th>
+        <th>Temp (°C)</th>
+        <th>Humidity</th>
+        <th>Wind km/h</th>
+        <th>Conditions</th>
+      </tr>
+    </thead>
+    <tbody id="weather-body">
+      <tr><td colspan="6" class="loading">Fetching live weather data...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Production + Prices -->
+<div class="grid grid-2" style="margin-bottom:16px">
+  <div class="card">
+    <h2>🌴 Production by Country (M tonnes/yr)</h2>
+    <div id="production-list"></div>
+  </div>
+  <div class="card">
+    <h2>📈 Coconut Oil Price (USD/tonne)</h2>
+    <canvas id="price-chart" height="200"></canvas>
+    <table id="price-table" style="margin-top:12px;font-size:0.82rem"></table>
+  </div>
+</div>
+
+<!-- Footer -->
+<div style="text-align:center;color:var(--muted);font-size:0.75rem;margin-top:8px">
+  Weather: <a href="https://open-meteo.com" style="color:var(--muted)">Open-Meteo</a> (free, no key) &nbsp;·&nbsp;
+  Production: FAO ~2022 &nbsp;·&nbsp;
+  Prices: World Bank Commodity Data (approximate) &nbsp;·&nbsp;
+  Auto-refreshes every 30s
+</div>
+
+<script>
+const REGIONS = [
+  { name:"Manila",    country:"Philippines", lat: 14.5995, lon: 120.9842 },
+  { name:"Jakarta",   country:"Indonesia",   lat: -6.2088, lon: 106.8456 },
+  { name:"Kochi",     country:"India",       lat:  9.9312, lon:  76.2673 },
+  { name:"Colombo",   country:"Sri Lanka",   lat:  6.9271, lon:  79.8612 },
+  { name:"Accra",     country:"Ghana",       lat:  5.5600, lon:  -0.2057 },
+  { name:"Recife",    country:"Brazil",      lat: -8.0476, lon: -34.8770 },
+  { name:"Port Vila", country:"Vanuatu",     lat:-17.7334, lon: 168.3210 },
+  { name:"Honiara",   country:"Solomon Is.", lat: -9.4456, lon: 160.0551 },
+];
+
+const PRODUCTION = [
+  ["Indonesia",    17.15],
+  ["Philippines",  14.37],
+  ["India",        14.18],
+  ["Sri Lanka",     2.61],
+  ["Brazil",        2.56],
+  ["Vietnam",       1.48],
+  ["Mexico",        1.25],
+  ["Papua N.G.",    1.19],
+  ["Thailand",      1.17],
+  ["Ghana",         0.84],
+];
+
+const PRICE_HISTORY = [
+  ["Jan 24",  935], ["Feb 24",  910], ["Mar 24",  955], ["Apr 24",  990],
+  ["May 24", 1025], ["Jun 24", 1080], ["Jul 24", 1140], ["Aug 24", 1220],
+  ["Sep 24", 1310], ["Oct 24", 1450], ["Nov 24", 1580], ["Dec 24", 1720],
+  ["Jan 25", 1850], ["Feb 25", 1940], ["Mar 25", 2010],
+];
+
+const FACTS = [
+  "A coconut palm can produce up to 180 coconuts per year.",
+  "The word 'coconut' comes from Portuguese 'coco' meaning skull.",
+  "Coconut water was used as IV fluid during World War II in emergencies.",
+  "A coconut takes 11–12 months to mature on the palm.",
+  "Coconut palms can live for 80–100 years.",
+  "The coconut is technically a fruit, a nut, AND a seed.",
+  "The Philippines produces ~14 billion coconuts per year.",
+  "Coconut oil melts at 24°C (76°F) — solid below, liquid above.",
+  "One hectare of coconut palms can sequester ~38 tonnes of CO₂ per year.",
+  "Coconut shells can be used to make activated charcoal.",
+  "Sri Lanka has 2.2 million people employed in the coconut industry.",
+  "Young coconut water is 94% water with natural electrolytes.",
+  "The coconut palm is called the 'Tree of Life' in the Philippines.",
+  "Coir (coconut fibre) is used in ropes, mats, and growing media.",
+  "Indonesia produces more coconuts than any other country — ~17M tonnes/year.",
+  "Coconut water has more potassium than a banana.",
+  "A full-grown coconut palm can withstand winds up to 120 mph.",
+  "Coconut husks float — how coconuts spread across the Pacific.",
+];
+
+const WMO_CODES = {
+  0:"☀ Clear sky", 1:"🌤 Mainly clear", 2:"⛅ Partly cloudy", 3:"☁ Overcast",
+  45:"🌫 Foggy", 48:"🌫 Icy fog",
+  51:"🌦 Light drizzle", 53:"🌦 Drizzle", 55:"🌧 Heavy drizzle",
+  61:"🌧 Slight rain", 63:"🌧 Rain", 65:"🌧 Heavy rain",
+  80:"🌦 Showers", 81:"🌦 Showers", 82:"⛈ Violent showers",
+  95:"⛈ Thunderstorm", 96:"⛈ Thunderstorm+hail", 99:"⛈ Thunderstorm+hail",
+};
+
+let factIdx = Math.floor(Math.random() * FACTS.length);
+const REFRESH_S = 30;
+
+// ── Weather ───────────────────────────────────────────────────────────────────
+async function fetchWeather(region) {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${region.lat}&longitude=${region.lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=auto`;
+  try {
+    const r = await fetch(url);
+    const d = await r.json();
+    const c = d.current;
+    return { temp: c.temperature_2m, humidity: c.relative_humidity_2m, wind: c.wind_speed_10m, code: c.weather_code, ok: true };
+  } catch {
+    return { ok: false };
+  }
+}
+
+function tempClass(t) {
+  if (t >= 30) return "temp-hot";
+  if (t >= 24) return "temp-warm";
+  return "temp-cool";
+}
+
+async function renderWeather() {
+  const tbody = document.getElementById("weather-body");
+  const results = await Promise.all(REGIONS.map(fetchWeather));
+  tbody.innerHTML = REGIONS.map((r, i) => {
+    const w = results[i];
+    if (!w.ok) return `<tr><td>${r.name}</td><td>${r.country}</td><td colspan="4" class="loading">Unavailable</td></tr>`;
+    const tc = tempClass(w.temp);
+    const cond = WMO_CODES[w.code] || "Unknown";
+    return `<tr>
+      <td><strong>${r.name}</strong></td>
+      <td>${r.country}</td>
+      <td class="${tc}">${w.temp.toFixed(1)}</td>
+      <td>${w.humidity}%</td>
+      <td>${w.wind.toFixed(1)}</td>
+      <td>${cond}</td>
+    </tr>`;
+  }).join("");
+}
+
+// ── Production ────────────────────────────────────────────────────────────────
+function renderProduction() {
+  const total = PRODUCTION.reduce((s, [, v]) => s + v, 0);
+  const max   = PRODUCTION[0][1];
+  document.getElementById("production-list").innerHTML = PRODUCTION.map(([country, mt]) => {
+    const pct = (mt / total * 100).toFixed(0);
+    const w   = (mt / max * 100).toFixed(1);
+    return `<div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span>${country}</span>
+        <span style="color:var(--muted)">${mt.toFixed(2)}M &nbsp; <strong style="color:var(--accent)">${pct}%</strong></span>
+      </div>
+      <div class="bar-bg" style="max-width:100%"><div class="bar-fill" style="width:${w}%"></div></div>
+    </div>`;
+  }).join("");
+}
+
+// ── Price chart ───────────────────────────────────────────────────────────────
+function renderPriceChart() {
+  const canvas = document.getElementById("price-chart");
+  canvas.width  = canvas.parentElement.clientWidth - 32;
+  canvas.height = 160;
+  const ctx  = canvas.getContext("2d");
+  const vals = PRICE_HISTORY.map(([, v]) => v);
+  const labels = PRICE_HISTORY.map(([l]) => l);
+  const mn = Math.min(...vals) * 0.95;
+  const mx = Math.max(...vals) * 1.05;
+  const W = canvas.width, H = canvas.height;
+  const pad = { top: 10, right: 10, bottom: 30, left: 55 };
+  const iW = W - pad.left - pad.right;
+  const iH = H - pad.top - pad.bottom;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid lines
+  ctx.strokeStyle = "#1e4020";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + iH * (1 - i / 4);
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    const v = mn + (mx - mn) * (i / 4);
+    ctx.fillStyle = "#6a9e6c";
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(`$${Math.round(v).toLocaleString()}`, pad.left - 4, y + 4);
+  }
+
+  // Gradient fill
+  const pts = vals.map((v, i) => ({
+    x: pad.left + (i / (vals.length - 1)) * iW,
+    y: pad.top + iH * (1 - (v - mn) / (mx - mn)),
+  }));
+
+  const grad = ctx.createLinearGradient(0, pad.top, 0, H - pad.bottom);
+  grad.addColorStop(0, "rgba(76,175,80,0.35)");
+  grad.addColorStop(1, "rgba(76,175,80,0.01)");
+
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, H - pad.bottom);
+  pts.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.lineTo(pts[pts.length-1].x, H - pad.bottom);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.strokeStyle = "#4caf50";
+  ctx.lineWidth = 2;
+  pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.stroke();
+
+  // Dots + labels
+  pts.forEach((p, i) => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = "#4caf50";
+    ctx.fill();
+    if (i % 3 === 0 || i === pts.length - 1) {
+      ctx.fillStyle = "#6a9e6c";
+      ctx.font = "9px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(labels[i], p.x, H - pad.bottom + 14);
+    }
+  });
+
+  // Latest price callout
+  const last = pts[pts.length - 1];
+  ctx.fillStyle = "#f5c518";
+  ctx.font = "bold 11px sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText(`$${vals[vals.length-1].toLocaleString()}`, last.x + 6, last.y + 4);
+}
+
+// ── Price table (recent) ──────────────────────────────────────────────────────
+function renderPriceTable() {
+  const recent = PRICE_HISTORY.slice(-6);
+  document.getElementById("price-table").innerHTML =
+    `<thead><tr><th>Month</th><th>Price</th><th>Change</th></tr></thead>` +
+    `<tbody>` +
+    recent.map(([month, price], i) => {
+      const fullIdx = PRICE_HISTORY.length - 6 + i;
+      let delta = "";
+      if (fullIdx > 0) {
+        const diff = price - PRICE_HISTORY[fullIdx - 1][1];
+        delta = `<span class="${diff >= 0 ? 'up' : 'down'}">${diff >= 0 ? '+' : ''}${diff}</span>`;
+      }
+      const isLatest = i === recent.length - 1;
+      return `<tr${isLatest ? ' style="font-weight:bold;color:var(--gold)"' : ''}>
+        <td>${month}</td><td>$${price.toLocaleString()}</td><td>${delta}</td>
+      </tr>`;
+    }).join("") +
+    `</tbody>`;
+}
+
+// ── Global stats pills ────────────────────────────────────────────────────────
+function renderStats() {
+  const totalProd = PRODUCTION.reduce((s, [, v]) => s + v, 0);
+  const latestPrice = PRICE_HISTORY[PRICE_HISTORY.length - 1];
+  const firstPrice  = PRICE_HISTORY[0];
+  const pricePct = ((latestPrice[1] / firstPrice[1] - 1) * 100).toFixed(0);
+
+  const pills = [
+    { label: "Global Production", value: `${totalProd.toFixed(1)}M t`, sub: "metric tonnes/year" },
+    { label: "Latest Oil Price",  value: `$${latestPrice[1].toLocaleString()}`, sub: `per tonne · ${latestPrice[0]}` },
+    { label: "Price Change",      value: `+${pricePct}%`, sub: `since ${firstPrice[0]}` },
+    { label: "Top Producer",      value: PRODUCTION[0][0], sub: `${PRODUCTION[0][1]}M t/yr` },
+    { label: "Countries Tracked", value: PRODUCTION.length, sub: "in production data" },
+    { label: "Regions Monitored", value: REGIONS.length, sub: "live weather feeds" },
+  ];
+
+  document.getElementById("stats-grid").innerHTML = pills.map(p =>
+    `<div class="stat-pill">
+      <div class="label">${p.label}</div>
+      <div class="value">${p.value}</div>
+      <div class="sub">${p.sub}</div>
+    </div>`
+  ).join("");
+}
+
+// ── Fact ──────────────────────────────────────────────────────────────────────
+function renderFact() {
+  document.getElementById("fact-text").textContent = FACTS[factIdx % FACTS.length];
+}
+
+// ── Refresh bar ───────────────────────────────────────────────────────────────
+let refreshStart = Date.now();
+function tickBar() {
+  const elapsed = (Date.now() - refreshStart) / 1000;
+  const pct = Math.max(0, 100 - (elapsed / REFRESH_S * 100));
+  document.getElementById("refresh-bar").style.width = pct + "%";
+}
+
+// ── Main render ───────────────────────────────────────────────────────────────
+async function render() {
+  document.getElementById("timestamp").textContent =
+    "Last updated: " + new Date().toLocaleString();
+  renderFact();
+  renderStats();
+  renderProduction();
+  renderPriceChart();
+  renderPriceTable();
+  await renderWeather();
+  factIdx++;
+  refreshStart = Date.now();
+}
+
+// Initial render
+render();
+setInterval(render, REFRESH_S * 1000);
+setInterval(tickBar, 200);
+window.addEventListener("resize", renderPriceChart);
+</script>
+</body>
+</html>
