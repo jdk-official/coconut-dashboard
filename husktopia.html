@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Husktopia — Official Tourism Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sand:    #f5e6c0;
+      --sand2:   #e8d5a0;
+      --ocean:   #0a9396;
+      --deep:    #005f73;
+      --sky:     #90e0ef;
+      --sky2:    #caf0f8;
+      --coral:   #ee9b00;
+      --sunset:  #ca6702;
+      --palm:    #2d6a4f;
+      --cream:   #fefae0;
+      --brown:   #6b4c2a;
+      --white:   #fff;
+      --text:    #3a2a1a;
+      --muted:   #7a6a55;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--sand); }
+    ::-webkit-scrollbar-thumb { background: var(--ocean); border-radius: 2px; }
+
+    .cursor {
+      width: 12px; height: 12px;
+      background: var(--coral);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.08s, width 0.2s, height 0.2s, opacity 0.2s;
+      mix-blend-mode: multiply;
+    }
+    .cursor-ring {
+      width: 36px; height: 36px;
+      border: 1.5px solid var(--coral);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.18s ease-out, width 0.2s, height 0.2s, opacity 0.2s;
+      opacity: 0.6;
+    }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.4rem 3rem;
+      transition: all 0.4s ease;
+    }
+    nav.scrolled {
+      background: rgba(254, 250, 224, 0.88);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.07);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: 1.4rem;
+      color: var(--deep);
+      letter-spacing: -0.5px;
+    }
+    .nav-logo em { font-style: italic; color: var(--coral); }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.8rem; letter-spacing: 1.5px; text-transform: uppercase;
+      font-weight: 500; color: var(--muted); text-decoration: none;
+      position: relative; transition: color 0.2s;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute; bottom: -3px; left: 0; right: 100%;
+      height: 1.5px; background: var(--ocean);
+      transition: right 0.25s ease;
+    }
+    .nav-links a:hover { color: var(--deep); }
+    .nav-links a:hover::after { right: 0; }
+
+    .hero {
+      height: 100vh; min-height: 600px;
+      position: relative;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .sky-layer {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg,
+        #87ceeb 0%, #a8dff0 35%, #c8eef8 55%,
+        #f5e6c0 75%, #e8d5a0 100%);
+      z-index: 0;
+    }
+
+    .sun {
+      position: absolute; top: 12%; left: 50%;
+      transform: translateX(-50%);
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 40%, #ffe066, #ff9900);
+      box-shadow: 0 0 60px 20px rgba(255,180,0,0.35);
+      z-index: 1;
+      animation: sunPulse 4s ease-in-out infinite;
+    }
+    @keyframes sunPulse {
+      0%,100% { box-shadow: 0 0 60px 20px rgba(255,180,0,0.35); }
+      50%      { box-shadow: 0 0 90px 35px rgba(255,180,0,0.5); }
+    }
+
+    .cloud {
+      position: absolute; z-index: 2;
+      background: rgba(255,255,255,0.85);
+      border-radius: 50px;
+      filter: blur(2px);
+    }
+    .cloud::before, .cloud::after {
+      content: '';
+      position: absolute;
+      background: inherit;
+      border-radius: 50%;
+    }
+
+    .palm { position: absolute; bottom: 28%; z-index: 4; }
+    .palm-left { left: 3%; transform: rotate(-8deg) scaleX(-1); }
+    .palm-right { right: 3%; transform: rotate(8deg); }
+    .palm svg { width: 140px; height: 220px; }
+
+    .sand-strip {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 32%;
+      background: linear-gradient(180deg, var(--sand) 0%, var(--sand2) 100%);
+      z-index: 3;
+      border-radius: 60% 60% 0 0 / 20% 20% 0 0;
+    }
+
+    #waveCanvas {
+      position: absolute; bottom: 28%;
+      left: 0; right: 0;
+      width: 100%; height: 120px;
+      z-index: 3;
+    }
+
+    .hero-text {
+      position: relative; z-index: 10;
+      margin-top: -8rem;
+    }
+    .hero-eyebrow {
+      display: inline-block;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.6);
+      padding: 0.35rem 1.1rem;
+      border-radius: 100px;
+      font-size: 0.7rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--deep);
+      margin-bottom: 1rem;
+      opacity: 0; transform: translateY(20px);
+      animation: fadeUp 0.6s ease 0.3s forwards;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: clamp(4rem, 12vw, 9rem);
+      line-height: 0.95;
+      letter-spacing: -3px;
+      color: var(--deep);
+      text-shadow: 0 4px 30px rgba(0,95,115,0.15);
+      opacity: 0; transform: translateY(30px);
+      animation: fadeUp 0.7s ease 0.5s forwards;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--coral);
+      display: block;
+    }
+    .hero-sub {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: clamp(1rem, 2vw, 1.3rem);
+      color: var(--muted);
+      margin-top: 0.75rem;
+      opacity: 0; transform: translateY(20px);
+      animation: fadeUp 0.6s ease 0.8s forwards;
+    }
+    .hero-cta {
+      margin-top: 2rem;
+      opacity: 0; transform: translateY(20px);
+      animation: fadeUp 0.6s ease 1s forwards;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--ocean);
+      color: #fff;
+      padding: 0.9rem 2.2rem;
+      border-radius: 100px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-decoration: none;
+      box-shadow: 0 6px 24px rgba(10,147,150,0.4);
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 32px rgba(10,147,150,0.5);
+      background: var(--deep);
+    }
+
+    .hero-stats {
+      position: absolute; bottom: 6%; left: 50%; z-index: 10;
+      transform: translateX(-50%);
+      display: flex; gap: 1.5rem;
+      opacity: 0; animation: fadeUp 0.6s ease 1.2s forwards;
+    }
+    .hero-stat {
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.7);
+      border-radius: 12px;
+      padding: 0.75rem 1.25rem;
+      text-align: center;
+      min-width: 80px;
+    }
+    .hero-stat-num {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900; font-size: 1.6rem;
+      color: var(--deep); line-height: 1;
+    }
+    .hero-stat-label {
+      font-size: 0.6rem; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    .floater {
+      position: absolute; z-index: 6; font-size: 1.8rem;
+      pointer-events: none;
+      animation: floatBob var(--dur, 4s) ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+    }
+    @keyframes floatBob {
+      0%,100% { transform: translateY(0) rotate(var(--rot,0deg)); }
+      50%      { transform: translateY(-12px) rotate(var(--rot2,5deg)); }
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-left {
+      opacity: 0; transform: translateX(-40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal-left.visible { opacity: 1; transform: translateX(0); }
+    .reveal-right {
+      opacity: 0; transform: translateX(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+    .stagger > * {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .stagger.visible > *:nth-child(1) { opacity:1; transform:none; transition-delay:0s; }
+    .stagger.visible > *:nth-child(2) { opacity:1; transform:none; transition-delay:0.1s; }
+    .stagger.visible > *:nth-child(3) { opacity:1; transform:none; transition-delay:0.2s; }
+    .stagger.visible > *:nth-child(4) { opacity:1; transform:none; transition-delay:0.3s; }
+    .stagger.visible > *:nth-child(5) { opacity:1; transform:none; transition-delay:0.4s; }
+    .stagger.visible > *:nth-child(6) { opacity:1; transform:none; transition-delay:0.5s; }
+
+    .wave-divider { display: block; width: 100%; overflow: hidden; line-height: 0; }
+    .wave-divider svg { display: block; }
+
+    .marquee-wrap {
+      background: var(--ocean);
+      overflow: hidden;
+      padding: 0.9rem 0;
+    }
+    .marquee-track {
+      display: flex; gap: 3.5rem;
+      animation: marquee 20s linear infinite;
+      width: max-content;
+    }
+    @keyframes marquee { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+    .marquee-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      font-size: 0.72rem; letter-spacing: 3px; text-transform: uppercase;
+      color: rgba(255,255,255,0.85); white-space: nowrap;
+    }
+    .marquee-sep { color: rgba(255,255,255,0.35); }
+
+    .section { padding: 6rem 3rem; }
+    .section-inner { max-width: 1060px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.68rem; letter-spacing: 4px; text-transform: uppercase;
+      color: var(--ocean); margin-bottom: 1rem;
+    }
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: clamp(2rem, 4.5vw, 3.2rem);
+      line-height: 1.1;
+      letter-spacing: -1px;
+      color: var(--deep);
+      margin-bottom: 1rem;
+    }
+    h2 em { font-style: italic; color: var(--coral); }
+    .lead {
+      color: var(--muted);
+      font-size: 0.97rem;
+      line-height: 1.8;
+      max-width: 540px;
+    }
+
+    #about { background: var(--cream); }
+    .about-grid {
+      display: grid; grid-template-columns: 1fr 1.1fr;
+      gap: 4rem; align-items: start; margin-top: 3.5rem;
+    }
+    .about-img-wrap {
+      position: relative;
+      border-radius: 20px; overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    }
+    .about-img-wrap img { width: 100%; display: block; filter: saturate(0.85); }
+    .about-caption {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 2rem 1.25rem 1rem;
+      background: linear-gradient(transparent, rgba(0,0,0,0.65));
+      font-size: 0.78rem; font-style: italic; color: rgba(255,255,255,0.8);
+      text-align: center;
+    }
+    .about-badge {
+      position: absolute; top: 1rem; right: 1rem;
+      background: var(--coral);
+      color: #fff;
+      font-size: 0.65rem; font-weight: 500; letter-spacing: 2px; text-transform: uppercase;
+      padding: 0.4rem 0.85rem; border-radius: 100px;
+    }
+    .about-text p { color: var(--muted); line-height: 1.85; margin-bottom: 1.1rem; font-size: 0.93rem; }
+    .pullquote {
+      border-left: 3px solid var(--coral);
+      padding: 0.75rem 1.5rem;
+      margin: 1.75rem 0;
+      background: rgba(238,155,0,0.06);
+      border-radius: 0 10px 10px 0;
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1.15rem;
+      color: var(--deep);
+      line-height: 1.5;
+    }
+
+    #visit { background: var(--sand); }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      margin-top: 3rem;
+    }
+    .card {
+      background: var(--cream);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      transition: transform 0.35s cubic-bezier(0.23,1,0.32,1), box-shadow 0.35s;
+      cursor: default;
+    }
+    .card:hover {
+      transform: translateY(-8px) scale(1.015);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.13);
+    }
+    .card-top {
+      padding: 2rem 1.75rem 1.5rem;
+      background: linear-gradient(135deg, var(--deep), var(--ocean));
+      text-align: center;
+    }
+    .card-top .icon { font-size: 3rem; display: block; }
+    .card-body { padding: 1.25rem 1.75rem 1.75rem; }
+    .card-body h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--deep); margin-bottom: 0.5rem;
+    }
+    .card-body p { color: var(--muted); font-size: 0.86rem; line-height: 1.65; }
+    .card-tag {
+      display: inline-block; margin-top: 0.9rem;
+      background: rgba(10,147,150,0.1);
+      color: var(--ocean);
+      font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase;
+      padding: 0.25rem 0.75rem; border-radius: 100px;
+    }
+
+    #laws {
+      background: var(--deep);
+      color: #fff;
+      position: relative; overflow: hidden;
+    }
+    #laws::before {
+      content: '';
+      position: absolute;
+      top: -200px; right: -200px;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(10,147,150,0.2), transparent 70%);
+      pointer-events: none;
+    }
+    #laws h2 { color: var(--sand); }
+    #laws h2 em { color: var(--coral); }
+    #laws .lead { color: rgba(245,230,192,0.6); max-width: 500px; }
+    #laws .section-label { color: var(--sky); }
+
+    .laws-top { display: flex; gap: 4rem; align-items: flex-start; margin-bottom: 3.5rem; flex-wrap: wrap; }
+    .laws-list { display: flex; flex-direction: column; }
+    .law-item {
+      display: grid; grid-template-columns: 3.5rem 1fr;
+      gap: 1.5rem; align-items: baseline;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      transition: background 0.2s;
+      border-radius: 8px;
+    }
+    .law-item:first-child { border-top: 1px solid rgba(255,255,255,0.08); }
+    .law-item:hover { background: rgba(255,255,255,0.03); padding-left: 0.5rem; }
+    .law-num {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1.5rem;
+      color: var(--coral);
+      font-weight: 700;
+    }
+    .law-content h4 { font-weight: 500; font-size: 0.95rem; color: var(--sand); margin-bottom: 0.3rem; }
+    .law-content p { font-size: 0.83rem; color: rgba(245,230,192,0.55); line-height: 1.6; }
+
+    #testimonials { background: var(--cream); }
+    .testi-intro {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 3rem; flex-wrap: wrap; gap: 1.5rem;
+    }
+    .stars-badge {
+      background: var(--coral);
+      color: #fff;
+      padding: 0.6rem 1.3rem;
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+    .testi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    .testi-card {
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 16px; padding: 1.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .testi-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+    }
+    .testi-card.big { grid-column: span 2; background: var(--deep); border-color: var(--deep); }
+    .testi-card.big .testi-text { color: rgba(245,230,192,0.75); font-size: 1rem; }
+    .testi-card.big .testi-name { color: var(--sand); }
+    .testi-card.big .testi-origin { color: rgba(245,230,192,0.5); }
+    .testi-stars { color: var(--coral); font-size: 0.85rem; letter-spacing: 2px; margin-bottom: 0.9rem; }
+    .testi-text {
+      font-style: italic; color: var(--muted);
+      font-size: 0.88rem; line-height: 1.75; margin-bottom: 1.25rem;
+    }
+    .testi-author { display: flex; align-items: center; gap: 0.75rem; }
+    .testi-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--ocean), var(--deep));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+    }
+    .testi-name { font-weight: 500; font-size: 0.85rem; color: var(--text); }
+    .testi-origin { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+
+    #decree {
+      background: var(--sand);
+      position: relative; overflow: hidden;
+    }
+    .decree-inner {
+      max-width: 1060px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 4rem; align-items: center;
+    }
+    .decree-left h2 { margin-bottom: 1.5rem; }
+    .decree-text {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: clamp(1.15rem, 2vw, 1.5rem);
+      color: var(--deep);
+      line-height: 1.55;
+      border-left: 3px solid var(--ocean);
+      padding-left: 1.5rem;
+    }
+    .decree-sig {
+      font-size: 0.72rem; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--muted); margin-top: 1.5rem;
+    }
+    .decree-right p {
+      color: var(--muted); font-size: 0.9rem; line-height: 1.8;
+      margin-bottom: 1rem;
+    }
+
+    .deco-coconut {
+      position: absolute;
+      font-size: 5rem;
+      opacity: 0.07;
+      pointer-events: none;
+      animation: floatBob 6s ease-in-out infinite;
+    }
+
+    footer {
+      background: var(--deep);
+      color: rgba(245,230,192,0.5);
+      text-align: center;
+      padding: 3rem 1.5rem;
+      font-size: 0.8rem; line-height: 1.9;
+    }
+    footer .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900; font-size: 1.5rem;
+      color: var(--sand); margin-bottom: 0.5rem;
+      letter-spacing: -0.5px;
+    }
+    footer .footer-logo em { font-style: italic; color: var(--coral); }
+    footer a { color: var(--sky); text-decoration: none; }
+
+    #progress {
+      position: fixed; top: 0; left: 0; z-index: 9000;
+      height: 3px; width: 0%;
+      background: linear-gradient(90deg, var(--coral), var(--ocean));
+      transition: width 0.1s linear;
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .section { padding: 4rem 1.5rem; }
+      .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .cards { grid-template-columns: 1fr; }
+      .testi-grid { grid-template-columns: 1fr; }
+      .testi-card.big { grid-column: span 1; }
+      .decree-inner { grid-template-columns: 1fr; gap: 2rem; }
+      .hero-stats { gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
+      .laws-top { gap: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav id="nav">
+  <div class="nav-logo">Husk<em>topia</em></div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#visit">Visit</a></li>
+    <li><a href="#laws">Laws</a></li>
+    <li><a href="#testimonials">Reviews</a></li>
+    <li><a href="#decree">Decree</a></li>
+  </ul>
+</nav>
+
+<section class="hero" id="hero">
+  <div class="sky-layer" id="skyLayer"></div>
+  <div class="sun" id="sun"></div>
+
+  <div class="cloud" style="width:120px;height:38px;top:18%;left:10%;animation:cloudDrift 22s linear infinite;"></div>
+  <div class="cloud" style="width:80px;height:28px;top:14%;left:62%;animation:cloudDrift 30s linear infinite 5s;"></div>
+  <div class="cloud" style="width:160px;height:44px;top:22%;left:30%;animation:cloudDrift 26s linear infinite 10s;opacity:0.7;"></div>
+
+  <div class="floater" style="left:8%;bottom:35%;--dur:5s;--delay:0s;--rot:-10deg;--rot2:5deg;">🥥</div>
+  <div class="floater" style="right:10%;bottom:40%;--dur:6s;--delay:1.5s;--rot:8deg;--rot2:-5deg;">🌺</div>
+  <div class="floater" style="left:20%;bottom:38%;--dur:4.5s;--delay:0.8s;--rot:-5deg;--rot2:10deg;">🐚</div>
+  <div class="floater" style="right:22%;bottom:33%;--dur:7s;--delay:2s;--rot:5deg;--rot2:-8deg;">🌊</div>
+
+  <div class="palm palm-left">
+    <svg viewBox="0 0 140 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M60 220 Q62 160 55 120 Q48 80 70 40" stroke="#5d3a1a" stroke-width="8" stroke-linecap="round" fill="none"/>
+      <ellipse cx="70" cy="38" rx="35" ry="12" fill="#2d6a4f" transform="rotate(-20,70,38)"/>
+      <ellipse cx="70" cy="35" rx="32" ry="11" fill="#2d6a4f" transform="rotate(15,70,35)"/>
+      <ellipse cx="72" cy="33" rx="28" ry="10" fill="#3a7d44" transform="rotate(-40,72,33)"/>
+      <ellipse cx="68" cy="30" rx="30" ry="10" fill="#3a7d44" transform="rotate(35,68,30)"/>
+      <ellipse cx="70" cy="28" rx="24" ry="9" fill="#2d6a4f" transform="rotate(-60,70,28)"/>
+      <circle cx="70" cy="42" r="6" fill="#8B4513"/>
+    </svg>
+  </div>
+  <div class="palm palm-right">
+    <svg viewBox="0 0 140 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M80 220 Q78 160 85 120 Q92 80 70 40" stroke="#5d3a1a" stroke-width="8" stroke-linecap="round" fill="none"/>
+      <ellipse cx="70" cy="38" rx="35" ry="12" fill="#2d6a4f" transform="rotate(20,70,38)"/>
+      <ellipse cx="70" cy="35" rx="32" ry="11" fill="#2d6a4f" transform="rotate(-15,70,35)"/>
+      <ellipse cx="68" cy="33" rx="28" ry="10" fill="#3a7d44" transform="rotate(40,68,33)"/>
+      <ellipse cx="72" cy="30" rx="30" ry="10" fill="#3a7d44" transform="rotate(-35,72,30)"/>
+      <ellipse cx="70" cy="28" rx="24" ry="9" fill="#2d6a4f" transform="rotate(60,70,28)"/>
+      <circle cx="70" cy="42" r="6" fill="#8B4513"/>
+    </svg>
+  </div>
+
+  <canvas id="waveCanvas"></canvas>
+  <div class="sand-strip"></div>
+
+  <div class="hero-text">
+    <div class="hero-eyebrow">🌺 Official Tourism Portal of</div>
+    <h1>Husk<em>topia</em></h1>
+    <p class="hero-sub">Where paradise found its president</p>
+    <div class="hero-cta">
+      <a href="#about" class="btn-primary">Begin Your Journey →</a>
+    </div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">1</div>
+      <div class="hero-stat-label">President</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">∞</div>
+      <div class="hero-stat-label">Sunsets</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">0</div>
+      <div class="hero-stat-label">Mondays</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">12</div>
+      <div class="hero-stat-label">Coconut Laws</div>
+    </div>
+  </div>
+</section>
+
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="marquee-item">🌴 No Mondays <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">🌅 Mandatory Sunsets <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">🥥 Coconut-backed Currency <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">🗺️ Not on Any Map <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">⭐ Perfect Five Stars <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">🏝️ Year 4 of the Founding <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">😴 Presidential Nap Clause Active <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">🌴 No Mondays <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">🌅 Mandatory Sunsets <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">🥥 Coconut-backed Currency <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">🗺️ Not on Any Map <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">⭐ Perfect Five Stars <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">🏝️ Year 4 of the Founding <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">😴 Presidential Nap Clause Active <span class="marquee-sep">✦</span></span>
+  </div>
+</div>
+
+<section class="section" id="about">
+  <div class="section-inner">
+    <p class="section-label reveal">Our Founding Story</p>
+    <div class="about-grid">
+      <div class="about-img-wrap reveal-left">
+        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=700&q=80" alt="The shores of Husktopia" />
+        <div class="about-caption">The exact beach where Husk arrived. He has not left.</div>
+        <div class="about-badge">Arrival Day</div>
+      </div>
+      <div class="about-text reveal-right">
+        <h2>How Husk Came to Rule in <em>Paradise</em></h2>
+        <p>The precise circumstances of Husk's arrival on the island remain officially classified. What is known, and celebrated annually on <strong>Arrival Day</strong>, is that he emerged from the sea fully equipped with a badge, a revolver, and an unshakeable conviction that this island needed a leader.</p>
+        <div class="pullquote">"I didn't choose the island. The island chose me. Also the current."</div>
+        <p>Within three days, Husk had named the territory, established a coat of arms (a flower on a hat), and declared the local palm tree his official deputy. Within a week, he had written the constitution on what historians believe was the back of a coconut.</p>
+        <p>Today, Husktopia is recognised by Husk and several people he has told about it. It is a place of profound calm, warm water, and the firm belief that most problems can be solved by sitting down and watching the sea for a while.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#e8d5a0"/>
+  </svg>
+</div>
+
+<section class="section" id="visit">
+  <div class="section-inner">
+    <p class="section-label reveal">Tourism</p>
+    <h2 class="reveal">Things to Do<br>in <em>Husktopia</em></h2>
+    <p class="lead reveal">A curated selection of experiences for the discerning visitor who has fully given up on schedules.</p>
+    <div class="cards stagger">
+      <div class="card">
+        <div class="card-top"><span class="icon">🌅</span></div>
+        <div class="card-body">
+          <h3>Sunset Watch (Mandatory)</h3>
+          <p>Every evening at dusk, all citizens and visitors are required to stop whatever they are doing and watch the sunset. Duration: until it's over. Attendance enforced warmly.</p>
+          <span class="card-tag">Culture · Daily</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-top"><span class="icon">🌊</span></div>
+        <div class="card-body">
+          <h3>The Presidential Lagoon</h3>
+          <p>A crystal-clear lagoon where swimming is encouraged, overthinking is banned, and the water temperature is described in the constitution as "just right."</p>
+          <span class="card-tag">Swimming</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-top"><span class="icon">🥥</span></div>
+        <div class="card-body">
+          <h3>The Coconut Exchange</h3>
+          <p>Husktopia's only marketplace. Coconuts can be traded for other coconuts, or for the promise of future coconuts. All major denominations accepted.</p>
+          <span class="card-tag">Commerce</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-top"><span class="icon">🌸</span></div>
+        <div class="card-body">
+          <h3>The National Flower Garden</h3>
+          <p>Home to the Huskbloom — the yellow and blue daisy Husk wears in his hat. Do not pick them. They are, per the constitution, "protected and also mine."</p>
+          <span class="card-tag">Nature</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-top"><span class="icon">🪵</span></div>
+        <div class="card-body">
+          <h3>The Driftwood Archive</h3>
+          <p>A museum of notable driftwood. The largest is called Gerald. One visitor cried. Husk said Gerald had been through a lot and nodded slowly. Guided tours available.</p>
+          <span class="card-tag">History</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-top"><span class="icon">🔫</span></div>
+        <div class="card-body">
+          <h3>The Revolver (Ceremonial)</h3>
+          <p>Fired once a year on Arrival Day to open the ceremonial coconut. Husk has never explained where the ammunition came from. He remains unbothered by the question.</p>
+          <span class="card-tag">Heritage</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,20 C480,60 960,0 1440,30 L1440,0 L0,0 Z" fill="#e8d5a0"/>
+  </svg>
+</div>
+
+<section class="section" id="laws">
+  <div class="section-inner">
+    <div class="laws-top">
+      <div>
+        <p class="section-label reveal">The Constitution</p>
+        <h2 class="reveal">Official Laws of<br><em>Husktopia</em></h2>
+      </div>
+      <p class="lead reveal" style="margin-top:0.25rem;">Ratified by Husk on Day 7. Amendments are considered based on whether Husk is in the mood.</p>
+    </div>
+    <div class="laws-list stagger">
+      <div class="law-item">
+        <div class="law-num">I</div>
+        <div class="law-content"><h4>No Mondays</h4><p>The day previously known as Monday has been officially reclassified as "a second Sunday, but quieter."</p></div>
+      </div>
+      <div class="law-item">
+        <div class="law-num">II</div>
+        <div class="law-content"><h4>The Sunset Decree</h4><p>All activity shall cease at sunset. This is not negotiable. It is, however, pleasant.</p></div>
+      </div>
+      <div class="law-item">
+        <div class="law-num">III</div>
+        <div class="law-content"><h4>Coconut Protocol</h4><p>All coconuts belong to the nation. Citizens may borrow them. The nation is very relaxed about this.</p></div>
+      </div>
+      <div class="law-item">
+        <div class="law-num">IV</div>
+        <div class="law-content"><h4>Flower Protection Act</h4><p>The Huskbloom may not be picked, sold, or worn — unless you are Husk, in which case it is traditional.</p></div>
+      </div>
+      <div class="law-item">
+        <div class="law-num">V</div>
+        <div class="law-content"><h4>Noise Ordinance</h4><p>The maximum permissible volume on Husktopia is "the sound of light waves." Anything louder requires a presidential permit.</p></div>
+      </div>
+      <div class="law-item">
+        <div class="law-num">VI</div>
+        <div class="law-content"><h4>Visitors Act</h4><p>Visitors are welcome. Those who attempt to find Husktopia on a map will be gently discouraged, as no such map exists.</p></div>
+      </div>
+      <div class="law-item">
+        <div class="law-num">VII</div>
+        <div class="law-content"><h4>The Nap Clause</h4><p>Citizens have the inalienable right to a post-lunch nap. Duration is unspecified. It ends when it ends.</p></div>
+      </div>
+      <div class="law-item">
+        <div class="law-num">VIII</div>
+        <div class="law-content"><h4>On Urgency</h4><p>Nothing on Husktopia is urgent. If something feels urgent, sit by the water for ten minutes and reassess. Usually resolves itself.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="testimonials">
+  <div class="section-inner">
+    <div class="testi-intro">
+      <div>
+        <p class="section-label reveal">Citizen Reviews</p>
+        <h2 class="reveal">What People<br>Are <em>Saying</em></h2>
+      </div>
+      <div class="stars-badge reveal">★★★★★ Perfect Score</div>
+    </div>
+    <div class="testi-grid stagger">
+      <div class="testi-card big">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"I tried to give four stars for 'lack of Wi-Fi' and President Husk personally delivered a coconut to my hut, sat down beside me, and stared quietly at the ocean until I changed my mind. Changed it."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">😅</div>
+          <div><div class="testi-name">Craig P.</div><div class="testi-origin">Now a permanent resident.</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"I arrived by accident. I have been here three years. The president waved at me once and I have not recovered."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">🧔</div>
+          <div><div class="testi-name">Dave R.</div><div class="testi-origin">Arrived via storm. Stayed for the vibes.</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"I came for a weekend. They have 'extended Sundays.' I am still on my first one. Outstanding governance."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">👩</div>
+          <div><div class="testi-name">Sandra T.</div><div class="testi-origin">Former project manager. Now just a person.</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"Gerald in the Driftwood Archive moved me deeply. Husk said Gerald had been through a lot. I cried."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">👴</div>
+          <div><div class="testi-name">Phil W.</div><div class="testi-origin">Retired. 4th visit.</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"I asked Husk what the gun was for. He said 'coconuts.' Most reassuring answer I've received from a head of state."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">🧑</div>
+          <div><div class="testi-name">Marcus O.</div><div class="testi-origin">Journalist. No longer writing the article.</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"Writing this review on a palm leaf. No signal. Please no one find this place. Five stars."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">🤸</div>
+          <div><div class="testi-name">Anon.</div><div class="testi-origin">Location unknown. Presumably Husktopia.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="decree" style="background:var(--sand);position:relative;overflow:hidden;">
+  <div class="deco-coconut" style="right:-1rem;top:2rem;">🥥</div>
+  <div class="deco-coconut" style="left:2rem;bottom:-1rem;animation-delay:2s;">🌴</div>
+  <div class="decree-inner">
+    <div class="decree-left reveal-left">
+      <p class="section-label">Latest Presidential Decree</p>
+      <h2>A Message from<br>the <em>President</em></h2>
+      <div class="decree-text">"Let it be known that Husktopia is open to all who find their way here, and not findable by those who are trying too hard. The ocean knows. The island knows. Relax."</div>
+      <p class="decree-sig">— President Husk · Husktopia · Year 4 of the Founding</p>
+    </div>
+    <div class="decree-right reveal-right">
+      <p>Husk issues periodic decrees from the Presidential Hut. They are posted on the palm tree by the lagoon and occasionally repeated at sunset to anyone nearby.</p>
+      <p>Decrees are considered law upon utterance. They are also considered optional if Husk has forgotten he said them, which happens.</p>
+      <p>There is no appeals process. There is, however, a coconut waiting for you on the porch, and the sea is doing something rather lovely at the moment.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Husk<em>topia</em></div>
+  <p>A Sovereign Nation of Unverified Location · Not on any map · Not sorry</p>
+  <p>© Year 4 of the Founding · All rights reserved by President Husk · Coconut-backed currency only</p>
+</footer>
+
+<script>
+const progress = document.getElementById('progress');
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+  progress.style.width = pct + '%';
+});
+
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 80);
+});
+
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+(function animateCursor() {
+  cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animateCursor);
+})();
+document.querySelectorAll('a,button,.card,.testi-card,.law-item').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cur.style.transform = 'translate(-50%,-50%) scale(2.5)';
+    ring.style.transform = 'translate(-50%,-50%) scale(1.5)';
+    ring.style.opacity = '0.3';
+  });
+  el.addEventListener('mouseleave', () => {
+    cur.style.transform = 'translate(-50%,-50%) scale(1)';
+    ring.style.transform = 'translate(-50%,-50%) scale(1)';
+    ring.style.opacity = '0.6';
+  });
+});
+
+const canvas = document.getElementById('waveCanvas');
+const ctx = canvas.getContext('2d');
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = 120; }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+let t = 0;
+function drawWaves() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const w = canvas.width;
+
+  ctx.beginPath();
+  ctx.moveTo(0, 60);
+  for (let x = 0; x <= w; x += 4) {
+    const y = 55 + Math.sin((x * 0.007) + t * 0.8) * 12 + Math.sin((x * 0.012) + t * 1.1) * 6;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(w, 120); ctx.lineTo(0, 120); ctx.closePath();
+  ctx.fillStyle = 'rgba(10,147,150,0.25)';
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(0, 65);
+  for (let x = 0; x <= w; x += 4) {
+    const y = 62 + Math.sin((x * 0.009) + t * 1.2 + 1) * 10 + Math.sin((x * 0.015) + t * 0.9 + 2) * 5;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(w, 120); ctx.lineTo(0, 120); ctx.closePath();
+  ctx.fillStyle = 'rgba(10,147,150,0.45)';
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(0, 70);
+  for (let x = 0; x <= w; x += 4) {
+    const y = 70 + Math.sin((x * 0.011) + t * 1.5 + 3) * 9 + Math.sin((x * 0.017) + t * 1.0 + 1) * 4;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(w, 120); ctx.lineTo(0, 120); ctx.closePath();
+  ctx.fillStyle = 'rgba(0,95,115,0.65)';
+  ctx.fill();
+
+  for (let x = 0; x < w; x += 80 + Math.sin(t + x) * 20) {
+    const y = 68 + Math.sin((x * 0.011) + t * 1.5 + 3) * 9;
+    ctx.beginPath();
+    ctx.arc(x + Math.sin(t * 2) * 5, y, 3 + Math.random() * 2, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.fill();
+  }
+
+  t += 0.02;
+  requestAnimationFrame(drawWaves);
+}
+drawWaves();
+
+const skyLayer = document.getElementById('skyLayer');
+const sunEl = document.getElementById('sun');
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  if (skyLayer) skyLayer.style.transform = `translateY(${y * 0.3}px)`;
+  if (sunEl) sunEl.style.transform = `translateX(-50%) translateY(${y * 0.15}px)`;
+});
+
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes cloudDrift {
+    from { transform: translateX(-200px); }
+    to   { transform: translateX(calc(100vw + 200px)); }
+  }
+`;
+document.head.appendChild(style);
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .stagger').forEach(el => {
+  revealObserver.observe(el);
+});
+</script>
+</body>
+</html>
