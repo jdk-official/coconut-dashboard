@@ -3,224 +3,281 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🥥 Live Coconut Dashboard</title>
+  <title>Coconut Tracker — Husktopia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg:        #0d1f0f;
-      --surface:   #122614;
-      --border:    #1e4020;
-      --accent:    #4caf50;
-      --gold:      #f5c518;
-      --text:      #e8f5e9;
-      --muted:     #6a9e6c;
-      --red:       #ef5350;
-      --blue:      #42a5f5;
-      --orange:    #ffa726;
+      --sand:    #f5e6c0;
+      --sand2:   #e8d5a0;
+      --ocean:   #0a9396;
+      --deep:    #005f73;
+      --sky:     #90e0ef;
+      --coral:   #ee9b00;
+      --sunset:  #ca6702;
+      --cream:   #fefae0;
+      --brown:   #6b4c2a;
+      --white:   #fff;
+      --text:    #3a2a1a;
+      --muted:   #7a6a55;
+      --red:     #c0392b;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
 
     body {
-      background: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
       color: var(--text);
-      font-family: 'Segoe UI', system-ui, sans-serif;
       font-size: 14px;
       min-height: 100vh;
-      padding: 16px;
     }
 
-    h1 {
-      text-align: center;
-      font-size: 1.8rem;
-      color: var(--gold);
-      letter-spacing: 2px;
-      margin-bottom: 4px;
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 500;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 3rem;
+      background: rgba(254,250,224,0.88);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.07);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900; font-size: 1.3rem;
+      color: var(--deep); letter-spacing: -0.5px;
+      text-decoration: none;
+    }
+    .nav-logo em { font-style: italic; color: var(--coral); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.78rem; letter-spacing: 1.5px; text-transform: uppercase;
+      font-weight: 500; color: var(--muted); text-decoration: none;
+      position: relative; transition: color 0.2s;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute; bottom: -3px; left: 0; right: 100%;
+      height: 1.5px; background: var(--ocean);
+      transition: right 0.25s ease;
+    }
+    .nav-links a:hover { color: var(--deep); }
+    .nav-links a:hover::after { right: 0; }
+
+    /* ── Progress / refresh bar ── */
+    #refresh-bar-wrap {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9000;
+      height: 3px; background: transparent; overflow: hidden;
+    }
+    #refresh-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--coral), var(--ocean));
+      width: 100%;
+      transition: width linear;
     }
 
+    /* ── Page wrapper ── */
+    .page { max-width: 1100px; margin: 0 auto; padding: 2rem 2rem 4rem; }
+
+    /* ── Header ── */
+    .page-header { text-align: center; margin-bottom: 2rem; }
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      color: var(--deep);
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+    .page-header h1 em { font-style: italic; color: var(--coral); }
     #timestamp {
-      text-align: center;
       color: var(--muted);
       font-size: 0.8rem;
-      margin-bottom: 20px;
+      margin-top: 0.4rem;
     }
 
-    .grid {
-      display: grid;
-      gap: 16px;
+    /* ── Section label ── */
+    .section-label {
+      font-size: 0.68rem; letter-spacing: 4px; text-transform: uppercase;
+      color: var(--ocean); margin-bottom: 0.75rem;
     }
 
+    /* ── Grid ── */
+    .grid { display: grid; gap: 1.25rem; }
     .grid-2 { grid-template-columns: 1fr 1fr; }
     .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
 
     @media (max-width: 900px) {
       .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { gap: 1.2rem; }
     }
 
+    /* ── Cards ── */
     .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px;
+      background: var(--white);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 18px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
     }
 
     .card h2 {
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--muted);
-      margin-bottom: 12px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 8px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--deep);
+      margin-bottom: 1rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--sand2);
     }
 
-    /* ── Weather table ── */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+    /* ── Tables ── */
+    table { width: 100%; border-collapse: collapse; }
 
     th {
       color: var(--muted);
-      font-weight: 600;
-      font-size: 0.75rem;
+      font-weight: 500;
+      font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       padding: 4px 8px;
       text-align: left;
     }
 
-    td {
-      padding: 6px 8px;
-      border-top: 1px solid var(--border);
-    }
+    td { padding: 6px 8px; border-top: 1px solid var(--sand); }
 
-    tr:hover td { background: rgba(76, 175, 80, 0.05); }
+    tr:hover td { background: rgba(10,147,150,0.04); }
 
     .temp-hot  { color: var(--red);    font-weight: 600; }
-    .temp-warm { color: var(--orange); font-weight: 600; }
-    .temp-cool { color: var(--blue);   font-weight: 600; }
+    .temp-warm { color: var(--sunset); font-weight: 600; }
+    .temp-cool { color: var(--ocean);  font-weight: 600; }
 
-    /* ── Bars ── */
-    .bar-wrap { display: flex; align-items: center; gap: 8px; }
+    /* ── Production bars ── */
     .bar-bg {
-      flex: 1;
-      height: 8px;
-      background: var(--border);
-      border-radius: 4px;
-      overflow: hidden;
+      flex: 1; height: 7px;
+      background: var(--sand2);
+      border-radius: 4px; overflow: hidden;
       max-width: 120px;
     }
     .bar-fill {
       height: 100%;
-      background: var(--accent);
+      background: linear-gradient(90deg, var(--ocean), var(--deep));
       border-radius: 4px;
       transition: width 0.4s ease;
     }
-    .bar-label { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
 
-    /* ── Price sparkline ── */
-    .sparkline-wrap { overflow-x: auto; }
     canvas { display: block; }
 
     /* ── Stat pills ── */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 10px;
+      gap: 1rem;
     }
 
     .stat-pill {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 14px;
+      background: var(--white);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      text-align: center;
     }
 
     .stat-pill .label {
-      font-size: 0.72rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
+      font-size: 0.68rem; color: var(--ocean);
+      text-transform: uppercase; letter-spacing: 1.5px;
+      margin-bottom: 0.35rem;
     }
 
     .stat-pill .value {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: var(--gold);
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; font-weight: 900;
+      color: var(--deep); line-height: 1;
     }
 
     .stat-pill .sub {
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-top: 2px;
+      font-size: 0.72rem; color: var(--muted); margin-top: 0.25rem;
     }
 
     /* ── Fact banner ── */
     #fact-box {
-      background: linear-gradient(135deg, #1a3a1a, #122614);
-      border: 1px solid var(--gold);
-      border-radius: 10px;
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
+      background: linear-gradient(135deg, var(--deep), var(--ocean));
+      border-radius: 18px;
+      padding: 1.25rem 1.5rem;
+      display: flex; align-items: center; gap: 1rem;
+      box-shadow: 0 6px 24px rgba(10,147,150,0.25);
     }
 
     #fact-box .coconut { font-size: 2rem; flex-shrink: 0; }
-    #fact-box .label   { font-size: 0.72rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
-    #fact-box .fact    { font-size: 1rem; color: var(--text); margin-top: 3px; line-height: 1.5; }
+    #fact-box .label   { font-size: 0.68rem; color: var(--sky); text-transform: uppercase; letter-spacing: 2px; }
+    #fact-box .fact    { font-size: 0.95rem; color: rgba(254,250,224,0.9); margin-top: 3px; line-height: 1.55;
+                         font-family: 'Playfair Display', serif; font-style: italic; }
 
     /* ── Price table ── */
-    .up   { color: var(--accent); }
-    .down { color: var(--red); }
-
-    /* ── Refresh bar ── */
-    #refresh-bar-wrap {
-      width: 100%;
-      height: 3px;
-      background: var(--border);
-      border-radius: 2px;
-      margin-bottom: 16px;
-      overflow: hidden;
-    }
-    #refresh-bar {
-      height: 100%;
-      background: var(--accent);
-      border-radius: 2px;
-      width: 100%;
-      transition: width linear;
-    }
+    .up   { color: var(--ocean); font-weight: 600; }
+    .down { color: var(--red);   font-weight: 600; }
 
     .loading { color: var(--muted); font-style: italic; }
 
-    .weather-icon { font-size: 1.1rem; }
-
-    /* ── Flag ── */
-    .country-cell { display: flex; align-items: center; gap: 6px; }
+    /* ── Footer ── */
+    footer {
+      background: var(--deep);
+      color: rgba(245,230,192,0.5);
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+      font-size: 0.8rem; line-height: 1.9;
+    }
+    footer .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900; font-size: 1.3rem;
+      color: var(--sand); margin-bottom: 0.4rem;
+    }
+    footer .footer-logo em { font-style: italic; color: var(--coral); }
+    footer a { color: var(--sky); text-decoration: none; }
   </style>
 </head>
 <body>
 
-<h1>🥥 Live Coconut Dashboard</h1>
-<div id="timestamp">Loading...</div>
 <div id="refresh-bar-wrap"><div id="refresh-bar"></div></div>
 
+<nav>
+  <a href="husktopia.html" class="nav-logo">Husk<em>topia</em></a>
+  <ul class="nav-links">
+    <li><a href="#stats">Stats</a></li>
+    <li><a href="#weather">Weather</a></li>
+    <li><a href="#production">Production</a></li>
+    <li><a href="#prices">Prices</a></li>
+  </ul>
+</nav>
+
+<div class="page">
+
+<div class="page-header">
+  <p class="section-label">Husktopia Intelligence Bureau</p>
+  <h1>Live Coconut <em>Tracker</em></h1>
+  <div id="timestamp">Loading...</div>
+</div>
+
 <!-- Fact banner -->
-<div id="fact-box" style="margin-bottom:16px">
+<div id="fact-box" style="margin-bottom:1.5rem">
   <div class="coconut">🥥</div>
   <div>
-    <div class="label">Coconut Fact</div>
+    <div class="label">Presidential Coconut Dispatch</div>
     <div class="fact" id="fact-text">Loading...</div>
   </div>
 </div>
 
 <!-- Global stats -->
-<div class="stats-grid" id="stats-grid" style="margin-bottom:16px"></div>
+<p class="section-label" id="stats">Global Overview</p>
+<div class="stats-grid" id="stats-grid" style="margin-bottom:1.5rem"></div>
 
 <!-- Weather -->
-<div class="card" style="margin-bottom:16px">
-  <h2>🌦 Weather in Coconut-Growing Regions</h2>
+<p class="section-label" id="weather">Growing Regions</p>
+<div class="card" style="margin-bottom:1.5rem">
+  <h2>Weather in Coconut-Growing Regions</h2>
   <table>
     <thead>
       <tr>
@@ -239,25 +296,27 @@
 </div>
 
 <!-- Production + Prices -->
-<div class="grid grid-2" style="margin-bottom:16px">
-  <div class="card">
-    <h2>🌴 Production by Country (M tonnes/yr)</h2>
+<p class="section-label" id="production">Supply &amp; Markets</p>
+<div class="grid grid-2" style="margin-bottom:1.5rem">
+  <div class="card" id="prices">
+    <h2>Production by Country (M tonnes/yr)</h2>
     <div id="production-list"></div>
   </div>
   <div class="card">
-    <h2>📈 Coconut Oil Price (USD/tonne)</h2>
+    <h2>Coconut Oil Price (USD/tonne)</h2>
     <canvas id="price-chart" height="200"></canvas>
-    <table id="price-table" style="margin-top:12px;font-size:0.82rem"></table>
+    <table id="price-table" style="margin-top:1rem;font-size:0.82rem"></table>
   </div>
 </div>
 
-<!-- Footer -->
-<div style="text-align:center;color:var(--muted);font-size:0.75rem;margin-top:8px">
-  Weather: <a href="https://open-meteo.com" style="color:var(--muted)">Open-Meteo</a> (free, no key) &nbsp;·&nbsp;
-  Production: FAO ~2022 &nbsp;·&nbsp;
-  Prices: World Bank Commodity Data (approximate) &nbsp;·&nbsp;
-  Auto-refreshes every 30s
-</div>
+</div><!-- end .page -->
+
+<footer>
+  <div class="footer-logo">Husk<em>topia</em></div>
+  <p>Coconut Intelligence Bureau · Auto-refreshes every 30s</p>
+  <p>Weather: <a href="https://open-meteo.com">Open-Meteo</a> &nbsp;·&nbsp; Production: FAO ~2022 &nbsp;·&nbsp; Prices: World Bank Commodity Data</p>
+  <p style="margin-top:0.5rem;"><a href="husktopia.html">← Back to Husktopia</a></p>
+</footer>
 
 <script>
 const REGIONS = [
@@ -397,14 +456,14 @@ function renderPriceChart() {
   ctx.clearRect(0, 0, W, H);
 
   // Grid lines
-  ctx.strokeStyle = "#1e4020";
+  ctx.strokeStyle = "#e8d5a0";
   ctx.lineWidth = 1;
   for (let i = 0; i <= 4; i++) {
     const y = pad.top + iH * (1 - i / 4);
     ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
     const v = mn + (mx - mn) * (i / 4);
-    ctx.fillStyle = "#6a9e6c";
-    ctx.font = "10px sans-serif";
+    ctx.fillStyle = "#7a6a55";
+    ctx.font = "10px 'DM Sans', sans-serif";
     ctx.textAlign = "right";
     ctx.fillText(`$${Math.round(v).toLocaleString()}`, pad.left - 4, y + 4);
   }
@@ -416,8 +475,8 @@ function renderPriceChart() {
   }));
 
   const grad = ctx.createLinearGradient(0, pad.top, 0, H - pad.bottom);
-  grad.addColorStop(0, "rgba(76,175,80,0.35)");
-  grad.addColorStop(1, "rgba(76,175,80,0.01)");
+  grad.addColorStop(0, "rgba(10,147,150,0.3)");
+  grad.addColorStop(1, "rgba(10,147,150,0.01)");
 
   ctx.beginPath();
   ctx.moveTo(pts[0].x, H - pad.bottom);
@@ -429,7 +488,7 @@ function renderPriceChart() {
 
   // Line
   ctx.beginPath();
-  ctx.strokeStyle = "#4caf50";
+  ctx.strokeStyle = "#0a9396";
   ctx.lineWidth = 2;
   pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
   ctx.stroke();
@@ -438,11 +497,11 @@ function renderPriceChart() {
   pts.forEach((p, i) => {
     ctx.beginPath();
     ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-    ctx.fillStyle = "#4caf50";
+    ctx.fillStyle = "#0a9396";
     ctx.fill();
     if (i % 3 === 0 || i === pts.length - 1) {
-      ctx.fillStyle = "#6a9e6c";
-      ctx.font = "9px sans-serif";
+      ctx.fillStyle = "#7a6a55";
+      ctx.font = "9px 'DM Sans', sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(labels[i], p.x, H - pad.bottom + 14);
     }
@@ -450,8 +509,8 @@ function renderPriceChart() {
 
   // Latest price callout
   const last = pts[pts.length - 1];
-  ctx.fillStyle = "#f5c518";
-  ctx.font = "bold 11px sans-serif";
+  ctx.fillStyle = "#ee9b00";
+  ctx.font = "bold 11px 'DM Sans', sans-serif";
   ctx.textAlign = "left";
   ctx.fillText(`$${vals[vals.length-1].toLocaleString()}`, last.x + 6, last.y + 4);
 }
