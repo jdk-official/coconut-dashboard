@@ -216,6 +216,56 @@
     #fact-box .fact    { font-size: 0.95rem; color: rgba(254,250,224,0.9); margin-top: 3px; line-height: 1.55;
                          font-family: 'Playfair Display', serif; font-style: italic; }
 
+    /* ── Presidential commentary ── */
+    .pullquote-wrap {
+      border-left: 4px solid var(--coral);
+      background: linear-gradient(135deg, rgba(254,250,224,0.8), rgba(245,230,192,0.5));
+      border-radius: 0 18px 18px 0;
+      padding: 1.25rem 1.75rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    .pullquote-label {
+      font-size: 0.68rem; letter-spacing: 4px; text-transform: uppercase;
+      color: var(--coral); margin-bottom: 0.6rem;
+    }
+    .pullquote-text {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--deep);
+      line-height: 1.55;
+      margin-bottom: 0.75rem;
+    }
+    .pullquote-sig {
+      font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── Indicator pills (comedy) ── */
+    .indicator-pill {
+      background: var(--white);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 14px;
+      padding: 0.9rem 1.1rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+    .indicator-pill .label {
+      font-size: 0.65rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 1.5px;
+      margin-bottom: 0.3rem;
+    }
+    .indicator-pill .value {
+      font-size: 0.92rem; font-weight: 600;
+      color: var(--deep);
+    }
+    .indicator-pill .value.good  { color: var(--ocean); }
+    .indicator-pill .value.coral { color: var(--coral); }
+    .indicator-pill .value.warn  { color: var(--sunset); }
+
+    /* ── Husk assessment cell ── */
+    .husk-assessment { font-style: italic; color: var(--muted); font-size: 0.8rem; }
+
     /* ── Price table ── */
     .up   { color: var(--ocean); font-weight: 600; }
     .down { color: var(--red);   font-weight: 600; }
@@ -271,11 +321,24 @@
 </div>
 
 <!-- Global stats -->
-<p class="section-label" id="stats">Global Overview</p>
+<p class="section-label" id="stats">Presidential Intelligence Summary</p>
 <div class="stats-grid" id="stats-grid" style="margin-bottom:1.5rem"></div>
 
+<!-- Husktopia Economic Indicators -->
+<p class="section-label">Husktopia Economic Indicators</p>
+<div class="stats-grid" id="indicators-grid" style="margin-bottom:1.5rem"></div>
+
+<!-- Presidential Market Commentary -->
+<div id="commentary-box" style="margin-bottom:1.5rem">
+  <div class="pullquote-wrap">
+    <div class="pullquote-label">Presidential Market Commentary</div>
+    <div class="pullquote-text" id="commentary-text">Loading...</div>
+    <div class="pullquote-sig">— President Husk · Husktopia · Year 4 of the Founding</div>
+  </div>
+</div>
+
 <!-- Weather -->
-<p class="section-label" id="weather">Growing Regions</p>
+<p class="section-label" id="weather">Field Reports from Husk-Adjacent Territories</p>
 <div class="card" style="margin-bottom:1.5rem">
   <h2>Weather in Coconut-Growing Regions</h2>
   <table>
@@ -287,16 +350,17 @@
         <th>Humidity</th>
         <th>Wind km/h</th>
         <th>Conditions</th>
+        <th>Husk's Assessment</th>
       </tr>
     </thead>
     <tbody id="weather-body">
-      <tr><td colspan="6" class="loading">Fetching live weather data...</td></tr>
+      <tr><td colspan="7" class="loading">Awaiting field dispatches...</td></tr>
     </tbody>
   </table>
 </div>
 
 <!-- Production + Prices -->
-<p class="section-label" id="production">Supply &amp; Markets</p>
+<p class="section-label" id="production">Supply &amp; Markets (Coconut Standard)</p>
 <div class="grid grid-2" style="margin-bottom:1.5rem">
   <div class="card" id="prices">
     <h2>Production by Country (M tonnes/yr)</h2>
@@ -350,25 +414,58 @@ const PRICE_HISTORY = [
   ["Jan 25", 1850], ["Feb 25", 1940], ["Mar 25", 2010],
 ];
 
-const FACTS = [
-  "A coconut palm can produce up to 180 coconuts per year.",
-  "The word 'coconut' comes from Portuguese 'coco' meaning skull.",
-  "Coconut water was used as IV fluid during World War II in emergencies.",
-  "A coconut takes 11–12 months to mature on the palm.",
-  "Coconut palms can live for 80–100 years.",
-  "The coconut is technically a fruit, a nut, AND a seed.",
-  "The Philippines produces ~14 billion coconuts per year.",
-  "Coconut oil melts at 24°C (76°F) — solid below, liquid above.",
-  "One hectare of coconut palms can sequester ~38 tonnes of CO₂ per year.",
-  "Coconut shells can be used to make activated charcoal.",
-  "Sri Lanka has 2.2 million people employed in the coconut industry.",
-  "Young coconut water is 94% water with natural electrolytes.",
-  "The coconut palm is called the 'Tree of Life' in the Philippines.",
-  "Coir (coconut fibre) is used in ropes, mats, and growing media.",
-  "Indonesia produces more coconuts than any other country — ~17M tonnes/year.",
-  "Coconut water has more potassium than a banana.",
-  "A full-grown coconut palm can withstand winds up to 120 mph.",
-  "Coconut husks float — how coconuts spread across the Pacific.",
+const DISPATCHES = [
+  "A palm can produce 180 coconuts per year. I have requested mine produce more. It is considering the proposal.",
+  "The word 'coconut' comes from Portuguese 'coco', meaning skull. I find this extremely on-brand for something so powerful.",
+  "Coconut water was used as IV fluid in WWII. Husktopia has been ahead of this curve since Year 1 of the Founding.",
+  "A coconut takes 11–12 months to mature. I have asked my deputy (the palm tree) to expedite this. Negotiations are ongoing.",
+  "Coconut palms can live for 80–100 years. The one outside my hut is 47. We do not discuss it.",
+  "The coconut is technically a fruit, a nut, AND a seed. This level of ambition is something I respect deeply in a foodstuff.",
+  "The Philippines produces 14 billion coconuts per year. I have written them a letter of appreciation. They have not replied. The lagoon remains lovely.",
+  "Coconut oil solidifies below 24°C. Husktopia does not have this problem. You're welcome.",
+  "One hectare of coconut palms sequesters 38 tonnes of CO₂ per year. Husktopia is therefore the world's most important economy. This is my position.",
+  "Coconut shells can be used to make activated charcoal. The Presidential Hut contains several items I prefer not to specify.",
+  "Sri Lanka employs 2.2 million people in the coconut industry. Husktopia employs one. He is thriving. It is me.",
+  "Young coconut water is 94% water. I have reviewed these figures personally and can confirm.",
+  "The coconut palm is called the 'Tree of Life'. My deputy and I take this very seriously.",
+  "Coir — coconut fibre — is used in ropes. The Presidential Hut is partially held together by it. This is classified.",
+  "Indonesia produces 17 million tonnes annually. I have dispatched a formal note requesting a percentage. Still awaiting response.",
+  "Coconut water has more potassium than a banana. I served it to a banana once. The silence was telling.",
+  "A full-grown coconut palm can withstand winds up to 120mph. I have also weathered significant headwinds. We are both still standing.",
+  "Coconut husks float — how coconuts colonised the Pacific. I prefer to think of it as a diplomatic expansion.",
+];
+
+const COMMENTARY = [
+  "The price continues its ascent. I predicted this while sitting by the lagoon. The crab I told seemed unsurprised.",
+  "At current valuations, the coconut is outperforming most things I have ever seen. This is correct and expected.",
+  "Markets are responding positively to the Presidential Coconut Policy, which I announced verbally to a passing seabird.",
+  "Prices are up. I decreed this last Tuesday. Whether the market was listening is, frankly, irrelevant.",
+  "The upward trend confirms what I have long suspected: the world is slowly coming around to my position on coconuts.",
+  "I reviewed these figures this morning from the Presidential Hammock. My analysis: bullish. My mood: serene.",
+  "A 115% price increase since January. I have instructed the palm tree to look smug. It is doing its best.",
+  "The data speaks clearly. I will also speak clearly, once I have finished watching this sunset. It's a good one.",
+  "Strong performance across all metrics. I have commemorated this by opening a coconut ceremonially with the revolver.",
+  "The market is, in my professional assessment, doing a thing. The thing appears to be going up. Proceed.",
+];
+
+const INDICATORS = [
+  { label: "Monday Status",        getValue: () => ({ text: "Abolished", cls: "good" }) },
+  { label: "Sunset Watch",         getValue: () => {
+    const h = new Date().getHours();
+    return h >= 17 ? { text: "Active 🌅", cls: "coral" } : { text: "Scheduled", cls: "good" };
+  }},
+  { label: "Presidential Nap",     getValue: () => {
+    const h = new Date().getHours();
+    return (h >= 13 && h < 15) ? { text: "In Progress 😴", cls: "warn" } : { text: "Standby", cls: "good" };
+  }},
+  { label: "Coconut Standard",     getValue: () => ({ text: "Backed 🥥", cls: "good" }) },
+  { label: "Vibes",                getValue: () => ({ text: "Immaculate", cls: "coral" }) },
+  { label: "Palm Deputy Status",   getValue: () => {
+    const states = ["Rustling Gently", "Deep in Thought", "Unavailable", "Presiding Calmly"];
+    return { text: states[Math.floor(Date.now() / 30000) % states.length], cls: "good" };
+  }},
+  { label: "Gerald (Driftwood)",   getValue: () => ({ text: "Stoic as Ever", cls: "good" }) },
+  { label: "Urgency Level",        getValue: () => ({ text: "None. Sit Down.", cls: "coral" }) },
 ];
 
 const WMO_CODES = {
@@ -380,7 +477,8 @@ const WMO_CODES = {
   95:"⛈ Thunderstorm", 96:"⛈ Thunderstorm+hail", 99:"⛈ Thunderstorm+hail",
 };
 
-let factIdx = Math.floor(Math.random() * FACTS.length);
+let factIdx = Math.floor(Math.random() * DISPATCHES.length);
+let commentaryIdx = Math.floor(Math.random() * COMMENTARY.length);
 const REFRESH_S = 30;
 
 // ── Weather ───────────────────────────────────────────────────────────────────
@@ -402,14 +500,27 @@ function tempClass(t) {
   return "temp-cool";
 }
 
+function huskAssessment(temp, code) {
+  if (code >= 95) return "Thunderstorm. A strongly-worded letter has been dispatched.";
+  if (code >= 80) return "Showers. Gerald has seen worse. We all have.";
+  if (code >= 61) return "Raining. The coconuts are unbothered. As am I.";
+  if (code >= 51) return "Drizzle. Acceptable. Monitoring.";
+  if (code === 3)  return "Overcast. Sunset Watch is suspended. An inquiry is underway.";
+  if (temp >= 32)  return "Exceptional heat. Peak coconut conditions. I take some credit.";
+  if (temp >= 28)  return "Warm and agreeable. Presidential approval: granted.";
+  if (temp >= 24)  return "Adequate. The palms appear content.";
+  return "Cooler than expected. I have napped on it and remain calm.";
+}
+
 async function renderWeather() {
   const tbody = document.getElementById("weather-body");
   const results = await Promise.all(REGIONS.map(fetchWeather));
   tbody.innerHTML = REGIONS.map((r, i) => {
     const w = results[i];
-    if (!w.ok) return `<tr><td>${r.name}</td><td>${r.country}</td><td colspan="4" class="loading">Unavailable</td></tr>`;
+    if (!w.ok) return `<tr><td>${r.name}</td><td>${r.country}</td><td colspan="5" class="loading">Field dispatch lost at sea.</td></tr>`;
     const tc = tempClass(w.temp);
     const cond = WMO_CODES[w.code] || "Unknown";
+    const assessment = huskAssessment(w.temp, w.code);
     return `<tr>
       <td><strong>${r.name}</strong></td>
       <td>${r.country}</td>
@@ -417,6 +528,7 @@ async function renderWeather() {
       <td>${w.humidity}%</td>
       <td>${w.wind.toFixed(1)}</td>
       <td>${cond}</td>
+      <td class="husk-assessment">${assessment}</td>
     </tr>`;
   }).join("");
 }
@@ -544,12 +656,12 @@ function renderStats() {
   const pricePct = ((latestPrice[1] / firstPrice[1] - 1) * 100).toFixed(0);
 
   const pills = [
-    { label: "Global Production", value: `${totalProd.toFixed(1)}M t`, sub: "metric tonnes/year" },
-    { label: "Latest Oil Price",  value: `$${latestPrice[1].toLocaleString()}`, sub: `per tonne · ${latestPrice[0]}` },
-    { label: "Price Change",      value: `+${pricePct}%`, sub: `since ${firstPrice[0]}` },
-    { label: "Top Producer",      value: PRODUCTION[0][0], sub: `${PRODUCTION[0][1]}M t/yr` },
-    { label: "Countries Tracked", value: PRODUCTION.length, sub: "in production data" },
-    { label: "Regions Monitored", value: REGIONS.length, sub: "live weather feeds" },
+    { label: "Global Production",         value: `${totalProd.toFixed(1)}M t`, sub: "not counting Husktopia's personal reserve" },
+    { label: "Coconut Oil Price",         value: `$${latestPrice[1].toLocaleString()}`, sub: `per tonne · ${latestPrice[0]} · Husk approves` },
+    { label: "Price Appreciation",        value: `+${pricePct}%`, sub: `since ${firstPrice[0]} · I predicted this` },
+    { label: "Dominant Nation",           value: PRODUCTION[0][0], sub: `${PRODUCTION[0][1]}M t/yr · yet to reply to my letter` },
+    { label: "Nations Under Observation", value: PRODUCTION.length, sub: "friendly surveillance only" },
+    { label: "Live Field Stations",       value: REGIONS.length, sub: "reporting to the Presidential Hut" },
   ];
 
   document.getElementById("stats-grid").innerHTML = pills.map(p =>
@@ -561,9 +673,26 @@ function renderStats() {
   ).join("");
 }
 
-// ── Fact ──────────────────────────────────────────────────────────────────────
+// ── Husktopia Economic Indicators ────────────────────────────────────────────
+function renderIndicators() {
+  document.getElementById("indicators-grid").innerHTML = INDICATORS.map(ind => {
+    const { text, cls } = ind.getValue();
+    return `<div class="indicator-pill">
+      <div class="label">${ind.label}</div>
+      <div class="value ${cls}">${text}</div>
+    </div>`;
+  }).join("");
+}
+
+// ── Presidential Market Commentary ───────────────────────────────────────────
+function renderCommentary() {
+  document.getElementById("commentary-text").textContent =
+    COMMENTARY[commentaryIdx % COMMENTARY.length];
+}
+
+// ── Dispatch (fact) ───────────────────────────────────────────────────────────
 function renderFact() {
-  document.getElementById("fact-text").textContent = FACTS[factIdx % FACTS.length];
+  document.getElementById("fact-text").textContent = DISPATCHES[factIdx % DISPATCHES.length];
 }
 
 // ── Refresh bar ───────────────────────────────────────────────────────────────
@@ -579,12 +708,15 @@ async function render() {
   document.getElementById("timestamp").textContent =
     "Last updated: " + new Date().toLocaleString();
   renderFact();
+  renderCommentary();
   renderStats();
+  renderIndicators();
   renderProduction();
   renderPriceChart();
   renderPriceTable();
   await renderWeather();
   factIdx++;
+  commentaryIdx++;
   refreshStart = Date.now();
 }
 
