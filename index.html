@@ -512,10 +512,35 @@ function huskAssessment(temp, code) {
   return "Cooler than expected. I have napped on it and remain calm.";
 }
 
+const HUSKTOPIA_WEATHER_ASSESSMENTS = [
+  "Ideal. As decreed. The island always performs well under observation.",
+  "Perfect. I take full credit. The lagoon concurs.",
+  "Conditions exactly as specified in the constitution. Coincidence? No.",
+  "Immaculate. Sunset Watch will commence at the usual time.",
+  "Precisely 29°C, as I have always preferred. The palm tree is aware.",
+];
+
 async function renderWeather() {
   const tbody = document.getElementById("weather-body");
   const results = await Promise.all(REGIONS.map(fetchWeather));
-  tbody.innerHTML = REGIONS.map((r, i) => {
+
+  // Gently varying "perfect" Husktopia weather
+  const hTemp    = (29 + (Math.sin(Date.now() / 120000) * 0.8)).toFixed(1);
+  const hHumid   = Math.round(63 + Math.sin(Date.now() / 90000) * 4);
+  const hWind    = (8.5 + Math.sin(Date.now() / 60000) * 1.5).toFixed(1);
+  const hAssess  = HUSKTOPIA_WEATHER_ASSESSMENTS[Math.floor(Date.now() / 30000) % HUSKTOPIA_WEATHER_ASSESSMENTS.length];
+
+  const husktopiaRow = `<tr style="background:linear-gradient(90deg,rgba(10,147,150,0.08),rgba(238,155,0,0.06));border-left:3px solid var(--coral)">
+    <td><strong>The Lagoon</strong></td>
+    <td style="color:var(--coral);font-weight:500">Husktopia 🥥</td>
+    <td class="temp-warm">${hTemp}</td>
+    <td>${hHumid}%</td>
+    <td>${hWind}</td>
+    <td>☀ Clear sky</td>
+    <td class="husk-assessment" style="color:var(--coral)">${hAssess}</td>
+  </tr>`;
+
+  const realRows = REGIONS.map((r, i) => {
     const w = results[i];
     if (!w.ok) return `<tr><td>${r.name}</td><td>${r.country}</td><td colspan="5" class="loading">Field dispatch lost at sea.</td></tr>`;
     const tc = tempClass(w.temp);
@@ -531,23 +556,49 @@ async function renderWeather() {
       <td class="husk-assessment">${assessment}</td>
     </tr>`;
   }).join("");
+
+  tbody.innerHTML = husktopiaRow + realRows;
 }
+
+const HUSKTOPIA_PRODUCTION_NOTES = [
+  "1 coconut · ceremonial · fired annually on Arrival Day",
+  "1 coconut · presidential reserve · not for trade",
+  "1 coconut · opened with revolver · figures unaudited",
+  "1 coconut · classified · quantity disputed by Husk",
+];
 
 // ── Production ────────────────────────────────────────────────────────────────
 function renderProduction() {
   const total = PRODUCTION.reduce((s, [, v]) => s + v, 0);
   const max   = PRODUCTION[0][1];
-  document.getElementById("production-list").innerHTML = PRODUCTION.map(([country, mt]) => {
+
+  const realRows = PRODUCTION.map(([country, mt]) => {
     const pct = (mt / total * 100).toFixed(0);
     const w   = (mt / max * 100).toFixed(1);
     return `<div style="margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;margin-bottom:3px">
         <span>${country}</span>
-        <span style="color:var(--muted)">${mt.toFixed(2)}M &nbsp; <strong style="color:var(--accent)">${pct}%</strong></span>
+        <span style="color:var(--muted)">${mt.toFixed(2)}M &nbsp; <strong style="color:var(--ocean)">${pct}%</strong></span>
       </div>
       <div class="bar-bg" style="max-width:100%"><div class="bar-fill" style="width:${w}%"></div></div>
     </div>`;
   }).join("");
+
+  const note = HUSKTOPIA_PRODUCTION_NOTES[Math.floor(Date.now() / 30000) % HUSKTOPIA_PRODUCTION_NOTES.length];
+  const husktopiaRow = `<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--sand2)">
+    <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+      <span style="color:var(--coral);font-weight:600">Husktopia 🥥</span>
+      <span style="color:var(--muted);font-style:italic;font-size:0.8rem">${note}</span>
+    </div>
+    <div class="bar-bg" style="max-width:100%">
+      <div class="bar-fill" style="width:0.3%;background:linear-gradient(90deg,var(--coral),var(--sunset))"></div>
+    </div>
+    <div style="font-size:0.75rem;color:var(--muted);margin-top:0.4rem;font-style:italic">
+      "Our output is not large. It is significant. There is a difference." — President Husk
+    </div>
+  </div>`;
+
+  document.getElementById("production-list").innerHTML = realRows + husktopiaRow;
 }
 
 // ── Price chart ───────────────────────────────────────────────────────────────
